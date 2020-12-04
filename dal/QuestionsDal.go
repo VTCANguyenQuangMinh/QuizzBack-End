@@ -25,3 +25,25 @@ func GetAllQuestions() ([]model.Question, error) {
 	}
 	return listQuestions, err
 }
+
+// GetAllIDQuestions get all ID questions from Quizz
+func GetAllIDQuestions() ([]int64, error) {
+	GetConnection()
+	stmt, _ := db.Prepare("select question_id from questions;")
+
+	defer stmt.Close()
+
+	rows, err := stmt.Query()
+	listIDQuestions := make([]int64, 0)
+	for rows.Next() {
+		var IDQuestion int64
+		err := rows.Scan(&IDQuestion)
+		if err != nil {
+			return listIDQuestions, err
+		}
+
+		listIDQuestions = append(listIDQuestions, IDQuestion)
+
+	}
+	return listIDQuestions, err
+}

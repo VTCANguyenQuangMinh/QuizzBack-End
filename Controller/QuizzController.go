@@ -3,6 +3,7 @@ package controller
 import (
 	"Quizz/dal"
 	"Quizz/model"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 )
@@ -31,6 +32,39 @@ func SetupItemRouter(r *gin.Engine) {
 			}
 
 			c.JSON(200, ListQuizz)
+		}
+	})
+
+	r.POST("/Quizz", func(c *gin.Context) {
+
+		ListResult := make([]model.Result, 0)
+		ListUsersAnswers := make([]model.UsersAnswers, 0)
+
+		if err := c.ShouldBindJSON(&ListUsersAnswers); err == nil {
+			ListIDQuestions, err := dal.GetAllIDQuestions()
+			if err != nil {
+				c.JSON(500, gin.H{
+					"messages": "Get all correct answers error",
+				})
+			} else {
+				for _, IDQuest := range ListIDQuestions {
+					var Result model.Result
+
+					for _, UsersAnswer := range ListUsersAnswers {
+						if IDQuest == UsersAnswer.QuestionID {
+							Result.ListUsersAnswer = ConvertListIDAnswersToListAnswers(UsersAnswer.AnswersID)
+						}
+					}
+					Result.ListCorrectAnswer, err = dal.GetCorrectAnswer(IDQuest)
+					fmt.Println(err)
+					Result.QuestionID = IDQuest
+					ListResult = append(ListResult, Result)
+				}
+
+				c.JSON(200, ListResult)
+
+			}
+
 		}
 	})
 
